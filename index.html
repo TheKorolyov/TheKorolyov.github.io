@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Alexandr Král – 3D Modeler</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- include web component for 3D models -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -22,35 +24,47 @@
       <h2>Moje projekty</h2>
       <div class="gallery">
 
-        <div class="project">
-          <img src="truck.png" alt="Sovětský vojenský náklaďák">
+        <div class="project" data-model="truck.glb">
+          <h3>Vojenský náklaďák</h3>
+          <div class="preview">
+            <img src="truck.png" alt="Sovětský vojenský náklaďák">
+          </div>
           <div class="project-info">
-            <h3>Vojenský náklaďák</h3>
             <p>Mid-poly model sovětského terénního trucku.</p>
+            <button class="toggle-model">Otevřít model</button>
           </div>
         </div>
 
-        <div class="project">
-          <img src="neon-car.png" alt="Neonové auto">
+        <div class="project" data-model="neon-car.glb">
+          <h3>Cosmo Tales wallpaper</h3>
+          <div class="preview">
+            <img src="neon-car.png" alt="Neonové auto">
+          </div>
           <div class="project-info">
-            <h3>Cosmo Tales wallpaper</h3>
             <p>Stylizovaný model s modrými a oranžovými světly.</p>
+            <button class="toggle-model">Otevřít model</button>
           </div>
         </div>
 
-        <div class="project">
-          <img src="mercedes-sunset.png" alt="Mercedes u moře">
+        <div class="project" data-model="mercedes-sunset.glb">
+          <h3>Mercedes W140</h3>
+          <div class="preview">
+            <img src="mercedes-sunset.png" alt="Mercedes u moře">
+          </div>
           <div class="project-info">
-            <h3>Mercedes W140</h3>
             <p>Nedodělaný realistický render černého sedanu na pláži.</p>
+            <button class="toggle-model">Otevřít model</button>
           </div>
         </div>
 
-        <div class="project">
-          <img src="ak47.png" alt="AK-47">
+        <div class="project" data-model="ak47.glb">
+          <h3>AK-47</h3>
+          <div class="preview">
+            <img src="ak47.png" alt="AK-47">
+          </div>
           <div class="project-info">
-            <h3>AK-47</h3>
             <p>LowPoly model klasické útočné pušky s dřevěnou pažbou a kovovým tělem.</p>
+            <button class="toggle-model">Otevřít model</button>
           </div>
         </div>
 
@@ -64,7 +78,66 @@
     </div>
   </footer>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const gallery = document.querySelector('.gallery');
+      if (!gallery) return;
+
+      function toggleProject(project) {
+        const preview = project.querySelector('.preview');
+        const existingViewer = preview ? preview.querySelector('model-viewer') : null;
+        const img = preview ? preview.querySelector('img') : null;
+        const btn = project.querySelector('.toggle-model');
+
+        if (existingViewer) {
+          existingViewer.remove();
+          project.classList.remove('active');
+          if (img) img.style.display = '';
+          if (btn) {
+            btn.textContent = 'Otevřít model';
+            btn.classList.remove('close');
+          }
+        } else if (img && preview) {
+          img.style.display = 'none';
+          const src = project.dataset.model;
+          if (!src) return;
+
+          const mv = document.createElement('model-viewer');
+          mv.setAttribute('src', src);
+          mv.setAttribute('camera-controls', '');
+          mv.setAttribute('auto-rotate', '');
+          // dimensions controlled by CSS to match the image
+
+          preview.appendChild(mv);
+          project.classList.add('active');
+          if (btn) {
+            btn.textContent = 'Zavřít ✕';
+            btn.classList.add('close');
+          }
+        }
+      }
+
+      // delegate image clicks
+      gallery.addEventListener('click', function(e) {
+        const project = e.target.closest('.project');
+        if (!project) return;
+        if (e.target.closest('img')) {
+          toggleProject(project);
+        }
+      });
+
+      // attach listeners to buttons directly (in case delegation fails)
+      const buttons = gallery.querySelectorAll('.toggle-model');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation(); // prevent gallery handler
+          const project = btn.closest('.project');
+          if (project) toggleProject(project);
+        });
+      });
+    });
+  </script>
+
 </body>
 
 </html>
-
